@@ -1,0 +1,50 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+
+public class MonsterSelection : MonoBehaviour
+{
+    [SerializeField] public Sprite[] MonsterSprites;
+    public GameObject CanvasMonsterSelect;
+    public Image MonsterSprite;
+
+    private void Awake()
+    {
+        MonsterSprites = new Sprite[3];
+    }
+
+
+    void Start()
+    {
+        CanvasMonsterSelect.SetActive(false);
+        MonsterSprite = GetComponent<Image>();
+    }
+
+    // Update is called once per frame
+    public void MonsterSelectButton()
+    {
+        CanvasMonsterSelect.SetActive(true);
+    }
+
+    public void MonsterSelectLlorona()
+    {
+        Debug.Log("You selected Llorona, the weeping bride.");
+        CanvasMonsterSelect.SetActive(false);
+        MonsterSprite.sprite = MonsterSprites[0];
+    }
+
+    public void MonsterSelectBella()
+    {
+        Debug.Log("You selected Bella, the possessed tempest");
+        CanvasMonsterSelect.SetActive(false);
+        MonsterSprite.sprite = MonsterSprites[1];
+    }
+
+    public void MonsterSelectGeppetto()
+    {
+        Debug.Log("You selected Geppetto, the cursed puppeteer");
+        CanvasMonsterSelect.SetActive(false);
+        MonsterSprite.sprite = MonsterSprites[2];
+    }
+}
