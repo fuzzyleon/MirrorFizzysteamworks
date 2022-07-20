@@ -9,12 +9,6 @@ public class MonsterSelection : MonoBehaviour
     public GameObject CanvasMonsterSelect;
     public Image MonsterSprite;
 
-    private void Awake()
-    {
-        MonsterSprites = new Sprite[3];
-    }
-
-
     void Start()
     {
         CanvasMonsterSelect.SetActive(false);
