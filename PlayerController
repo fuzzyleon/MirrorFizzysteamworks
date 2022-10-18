@@ -1,0 +1,233 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using Mirror;
+using UnityEngine.SceneManagement;
+
+[RequireComponent(typeof(CharacterController))]
+
+public class PlayerController : NetworkBehaviour
+{
+
+    public float walkingSpeed = 7.5f;
+    public float runningSpeed = 11.5f;
+    public float jumpSpeed = 8.0f;
+    public float gravity = 20.0f;
+    public Camera playerCamera;
+    public float lookSpeed = 2.0f;
+    public float lookXLimit = 45.0f;
+
+    //lighting
+    public GameObject flashLightInner;
+    public GameObject flashLightOuter;
+    public GameObject playerLight;
+    public GameObject monsterLight;
+    public bool isOn;
+    public bool playerLightisOn;
+    public bool monsterLightisOn;
+
+    //Character models
+    public GameObject HumanModel1;
+    public GameObject Llorona;
+    public GameObject Bella;
+    public GameObject Geppetto;
+
+    //settings menu
+    public GameObject exitScreen;
+    public bool exitScreenActive = false;
+
+    CharacterController characterController;
+    Vector3 moveDirection = Vector3.zero;
+    float rotationX = 0;
+
+    //bool Loaded = false;
+
+    //Script reference
+    public PlayerObjectController playerObjectController;
+    public CustomNetworkManager manager;
+    public MonsterSelection MonsterSelection;
+
+    [HideInInspector]
+    public bool canMove = true;
+
+    void Start()
+    {
+        characterController = GetComponent<CharacterController>();
+
+        //Disable camera if we are not the main client
+        if(!isLocalPlayer)
+        {
+            playerCamera.gameObject.SetActive(false);
+            exitScreen.gameObject.SetActive(false);
+        }
+
+        if(isLocalPlayer)
+        {
+            //Characters are loaded in lobby, set them all to false so they can't see them. They should be loaded in game
+            HumanModel1.SetActive(false);
+            Llorona.SetActive(false);
+            Bella.SetActive(false);
+            Geppetto.SetActive(false);
+
+            if (playerObjectController.UniqueID == 1)
+            {
+                transform.position = new Vector3(Random.Range(-17, -9), 1f, Random.Range(-17, -9));
+            }
+
+            if (playerObjectController.UniqueID == 2)
+            {
+                transform.position = new Vector3(Random.Range(9, 17), 1f, Random.Range(-17, -9));
+            }
+
+            if (playerObjectController.UniqueID == 3)
+            {
+                transform.position = new Vector3(Random.Range(9, 17), 1f, Random.Range(9, 17));
+            }
+
+            if (playerObjectController.UniqueID == 4)
+            {
+                transform.position = new Vector3(Random.Range(-17, 9), 1f, Random.Range(9, 17));
+            }
+
+            if (playerObjectController.UniqueID == 5)
+            {
+                transform.position = new Vector3(Random.Range(-1, 1), 1f, Random.Range(-1, 1));
+            }
+        }
+    }
+
+    void OnSceneLoaded(Scene Game, LoadSceneMode mode)
+    {
+        //Loaded = true;     
+    }
+
+
+    void Update()
+    {        
+        SceneManager.sceneLoaded += OnSceneLoaded;
+
+        if (SceneManager.GetActiveScene().name != "Game") //Only play movement on game scene
+        {
+            return;
+        }        
+        
+        if (!isLocalPlayer) //if we are not the main client, dont run this method
+        {
+            return;
+
+        }
+        
+        /*if (Loaded)
+        {
+                Cursor.lockState = CursorLockMode.Locked;
+        }*/
+
+        
+        // We are grounded, so recalculate move direction based on axes
+        Vector3 forward = transform.TransformDirection(Vector3.forward);
+        Vector3 right = transform.TransformDirection(Vector3.right);
+        // Press Left Shift to run
+        bool isRunning = Input.GetKey(KeyCode.LeftShift);
+        float curSpeedX = canMove ? (isRunning ? runningSpeed : walkingSpeed) * Input.GetAxis("Vertical") : 0;
+        float curSpeedY = canMove ? (isRunning ? runningSpeed : walkingSpeed) * Input.GetAxis("Horizontal") : 0;
+        float movementDirectionY = moveDirection.y;
+        moveDirection = (forward * curSpeedX) + (right * curSpeedY);
+        
+        
+        if (Input.GetButton("Jump") && canMove && characterController.isGrounded)
+        {
+            moveDirection.y = jumpSpeed;
+        }
+        else
+        {
+            moveDirection.y = movementDirectionY;
+        }
+
+        // Apply gravity. Gravity is multiplied by deltaTime twice (once here, and once below
+        // when the moveDirection is multiplied by deltaTime). This is because gravity should be applied
+        // as an acceleration (ms^-2)
+        if (!characterController.isGrounded)
+        {
+            moveDirection.y -= gravity * Time.deltaTime;
+        }
+
+        // Move the controller
+        characterController.Move(moveDirection * Time.deltaTime);
+
+        // Player and Camera rotation
+        if (canMove)
+        {
+            rotationX += -Input.GetAxis("Mouse Y") * lookSpeed;
+            rotationX = Mathf.Clamp(rotationX, -lookXLimit, lookXLimit);
+            playerCamera.transform.localRotation = Quaternion.Euler(rotationX, 0, 0);
+            transform.rotation *= Quaternion.Euler(0, Input.GetAxis("Mouse X") * lookSpeed, 0);
+        }
+
+        if(isLocalPlayer)
+        {
+            if (playerObjectController.UniqueID != 5)
+            {
+                HumanModel1.SetActive(true);
+                //Llorona.SetActive(false);
+                //Bella.SetActive(false);
+                //Geppetto.SetActive(false);
+                playerLight.SetActive(true);
+                playerLightisOn = true;
+                monsterLight.SetActive(false);
+                monsterLightisOn = false;
+
+                if (Input.GetMouseButtonDown(1))
+                {
+                    if (isOn)
+                    {
+                        flashLightInner.SetActive(false);
+                        flashLightOuter.SetActive(false);
+                        isOn = false;
+                    }
+                    else
+                    {
+                        flashLightInner.SetActive(true);
+                        flashLightOuter.SetActive(true);
+                        isOn = true;
+                    }
+                }
+            }
+
+            if (playerObjectController.UniqueID == 5)
+            {
+                Debug.Log("if(playerobjectcontroller.uniqueID==5 OK");
+                //HumanModel1.SetActive(false);
+                if (MonsterSelection.MonsterSprite.sprite = MonsterSelection.MonsterSprites[0])
+                {
+                    Llorona.SetActive(true);
+                    Debug.Log("Llorona.Setactive = true");
+                    //Bella.SetActive(false);
+                    //Geppetto.SetActive(false);
+                }
+                if (MonsterSelection.MonsterSprite.sprite = MonsterSelection.MonsterSprites[1])
+                {
+                    //Llorona.SetActive(false);
+                    Bella.SetActive(true);
+                    Debug.Log("Bella.SetActive = true");
+                    //Geppetto.SetActive(false);
+                }
+                if (MonsterSelection.MonsterSprite.sprite = MonsterSelection.MonsterSprites[2])
+                {
+                    //Llorona.SetActive(false);
+                    //Bella.SetActive(false);
+                    Geppetto.SetActive(true);
+                    Debug.Log("Geppetto.SetActive = true");
+                }
+
+                monsterLight.SetActive(true);
+                monsterLightisOn = true;
+                playerLight.SetActive(false);
+                playerLightisOn = false;
+                flashLightInner.SetActive(false);
+                flashLightOuter.SetActive(false);
+                isOn = false;
+            }
+
+        }
+    }
+}
