@@ -1,0 +1,36 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class BellaAnimator : MonoBehaviour
+{
+    public Animator bellanim;
+    public bool SprintOn = false;
+
+    // Update is called once per frame
+    void Update()
+    {
+        bellanim.SetFloat("vertical", Input.GetAxis("Vertical"));
+        bellanim.SetFloat("horizontal", Input.GetAxis("Horizontal"));
+
+        if (Input.GetMouseButtonDown(0))
+        {
+            bellanim.SetTrigger("Attack");
+        }
+        else
+        {
+            bellanim.ResetTrigger("Attack");
+        }
+
+        if (Input.GetKeyDown(KeyCode.LeftShift))
+        {
+            SprintOn = !SprintOn;
+            bellanim.SetTrigger(SprintOn ? "StartSprint" : "StopSprint");
+        }
+
+        if (SprintOn == true)
+        {
+            bellanim.SetFloat("Sprint", Input.GetAxis("Vertical"));
+        }
+    }
+}
