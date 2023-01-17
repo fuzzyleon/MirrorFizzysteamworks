@@ -5,6 +5,7 @@ using Mirror;
 using Steamworks;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using Mirror.FizzySteam;
 
 public class PlayerObjectController : NetworkBehaviour
 {
@@ -14,7 +15,7 @@ public class PlayerObjectController : NetworkBehaviour
     [SyncVar] public int connectionID;
     [SyncVar] public int PlayerIdNumber;
     [SyncVar] public ulong PlayerSteamID;
-    [SyncVar] public int UniqueID;
+    //[SyncVar] public int UniqueID;
     [SyncVar(hook = nameof(PlayerNameUpdate))] public string PlayerName;
     [SyncVar(hook = nameof(PlayerReadyUpdate))] public bool Ready;
 
@@ -24,7 +25,7 @@ public class PlayerObjectController : NetworkBehaviour
     {
         get
         {
-            if(manager != null)
+            if (manager != null)
             {
                 return manager;
             }
@@ -34,12 +35,12 @@ public class PlayerObjectController : NetworkBehaviour
 
     private void PlayerReadyUpdate(bool oldValue, bool newValue)
     {
-        if(isServer)
+        if (isServer)
         {
             this.Ready = newValue;
         }
 
-        if(isClient)
+        if (isClient)
         {
             LobbyController.instance.UpdatePlayerList();
         }
@@ -53,7 +54,7 @@ public class PlayerObjectController : NetworkBehaviour
 
     public void ChangeReady()
     {
-        if(hasAuthority)
+        if (isOwned)
         {
             CmdSetPlayerReady();
         }
@@ -95,11 +96,11 @@ public class PlayerObjectController : NetworkBehaviour
 
     public void PlayerNameUpdate(string Oldvalue, string NewValue) //when player joins or leaves, it changes the text in the lobby
     {
-       if(isServer) //Host
+        if (isServer) //Host
         {
             this.PlayerName = NewValue;
         }
-       if(isClient) //Client
+        if (isClient) //Client
         {
             LobbyController.instance.UpdatePlayerList();
         }
@@ -107,12 +108,12 @@ public class PlayerObjectController : NetworkBehaviour
 
     public void CanStartGame(string SceneName)
     {
-        if(hasAuthority)
+        if (isOwned)
         {
             CmdCanStartGame(SceneName);
         }
     }
-    
+
     [Command]
     public void CmdCanStartGame(string SceneName)
     {
@@ -121,34 +122,16 @@ public class PlayerObjectController : NetworkBehaviour
 
     public void QuitLobby()
     {
-        if (hasAuthority)
+        if (isOwned)
         {
             if (PlayerIdNumber == 1)
             {
-                Manager.StopHost();
+                NetworkManager.singleton.StopHost();
             }
             else
             {
-                Manager.StopClient();
+                NetworkManager.singleton.StopClient();
             }
         }
     }
-
-
-    /*public void DisconnectGame()
-    {
-        CmdDisconnectGame();
-    }
-
-    [Command]
-    void CmdDisconnectGame()
-    {
-        RpcDisconnectGame();
-    }
-
-    [ClientRpc]
-    void RpcDisconnectGame()
-    {
-
-    }*/
 }
