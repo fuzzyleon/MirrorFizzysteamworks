@@ -18,12 +18,12 @@ public class LobbiesListManager : MonoBehaviour
 
     private void Awake()
     {
-        if(instance == null) { instance = this; }
+        if (instance == null) { instance = this; }
     }
 
     public void DestroyLobbies()
     {
-        foreach(GameObject lobbyItem in listOfLobbies)
+        foreach (GameObject lobbyItem in listOfLobbies)
         {
             Destroy(lobbyItem);
         }
@@ -36,9 +36,9 @@ public class LobbiesListManager : MonoBehaviour
 
     public void DisplayLobbies(List<CSteamID> lobbyIDs, LobbyDataUpdate_t result)
     {
-        for(int i=0; i < lobbyIDs.Count; i++)
+        for (int i = 0; i < lobbyIDs.Count; i++)
         {
-            if(lobbyIDs[i].m_SteamID == result.m_ulSteamIDLobby)
+            if (lobbyIDs[i].m_SteamID == result.m_ulSteamIDLobby)
             {
                 GameObject createdItem = Instantiate(lobbyDataItemPrefab);
 
